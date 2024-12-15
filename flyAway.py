@@ -121,7 +121,7 @@ async def signin():
 async def followUser():
     data = await request.get_json()
 
-    if not "enc_data" and "powkey" in data: return jsonify({"status": "INVALID_INPUT"})
+    if not "enc_data" in data and not "powkey" in data: return jsonify({"status": "INVALID_INPUT"})
     
     dec_data = await fly.fly_crypto.decrypt(data['enc_data'], data['powkey'])
     powkey = data['powkey']
@@ -173,7 +173,7 @@ async def followUser():
 async def unfollowUser():
     data = await request.get_json()
 
-    if not "enc_data" and "powkey" in data: return jsonify({"status": "INVALID_INPUT"})
+    if not "enc_data" in data and not "powkey" in data: return jsonify({"status": "INVALID_INPUT"})
     
     dec_data = await fly.fly_crypto.decrypt(data['enc_data'], data['powkey'])
     powkey = data['powkey']
@@ -225,7 +225,7 @@ async def unfollowUser():
 async def getMe():
     data = await request.get_json()
 
-    if not "enc_data" and "powkey" in data: return jsonify({"status": "INVALID_INPUT"})
+    if not "enc_data" in data and not "powkey" in data: return jsonify({"status": "INVALID_INPUT"})
     
     dec_data = await fly.fly_crypto.decrypt(data['enc_data'], data['powkey'])
     powkey = data['powkey']
@@ -276,7 +276,7 @@ async def getMe():
 async def getUserById():
     data = await request.get_json()
 
-    if not "enc_data" and "powkey" in data: return jsonify({"status": "INVALID_INPUT"})
+    if not "enc_data" in data and not "powkey" in data: return jsonify({"status": "INVALID_INPUT"})
     
     dec_data = await fly.fly_crypto.decrypt(data['enc_data'], data['powkey'])
     powkey = data['powkey']
@@ -346,7 +346,7 @@ async def getUserById():
 async def addTwitt():
     data = await request.get_json()
 
-    if not "enc_data" and "powkey" in data: return jsonify({"status": "INVALID_INPUT"})
+    if not "enc_data" in data and not "powkey" in data: return jsonify({"status": "INVALID_INPUT"})
     
     dec_data = await fly.fly_crypto.decrypt(data['enc_data'], data['powkey'])
     powkey = data['powkey']
@@ -402,7 +402,7 @@ async def addTwitt():
 async def addTwittReply():
     data = await request.get_json()
 
-    if not "enc_data" and "powkey" in data: return jsonify({"status": "INVALID_INPUT"})
+    if not "enc_data" in data and not "powkey" in data: return jsonify({"status": "INVALID_INPUT"})
     
     dec_data = await fly.fly_crypto.decrypt(data['enc_data'], data['powkey'])
     powkey = data['powkey']
@@ -460,7 +460,7 @@ async def addTwittReply():
 async def removeTwitt():
     data = await request.get_json()
 
-    if not "enc_data" and "powkey" in data: return jsonify({"status": "INVALID_INPUT"})
+    if not "enc_data" in data and not "powkey" in data: return jsonify({"status": "INVALID_INPUT"})
     
     dec_data = await fly.fly_crypto.decrypt(data['enc_data'], data['powkey'])
     powkey = data['powkey']
@@ -514,7 +514,7 @@ async def removeTwitt():
 async def likeTwitt():
     data = await request.get_json()
 
-    if not "enc_data" and "powkey" in data: return jsonify({"status": "INVALID_INPUT"})
+    if not "enc_data" in data and not "powkey" in data: return jsonify({"status": "INVALID_INPUT"})
     
     dec_data = await fly.fly_crypto.decrypt(data['enc_data'], data['powkey'])
     powkey = data['powkey']
@@ -569,7 +569,7 @@ async def likeTwitt():
 async def unlikeTwitt():
     data = await request.get_json()
 
-    if not "enc_data" and "powkey" in data: return jsonify({"status": "INVALID_INPUT"})
+    if not "enc_data" in data and not "powkey" in data: return jsonify({"status": "INVALID_INPUT"})
     
     dec_data = await fly.fly_crypto.decrypt(data['enc_data'], data['powkey'])
     powkey = data['powkey']
@@ -624,7 +624,7 @@ async def unlikeTwitt():
 async def likeTwittReply():
     data = await request.get_json()
 
-    if not "enc_data" and "powkey" in data: return jsonify({"status": "INVALID_INPUT"})
+    if not "enc_data" in data and not "powkey" in data: return jsonify({"status": "INVALID_INPUT"})
     
     dec_data = await fly.fly_crypto.decrypt(data['enc_data'], data['powkey'])
     powkey = data['powkey']
@@ -680,7 +680,7 @@ async def likeTwittReply():
 async def unlikeTwittReply():
     data = await request.get_json()
 
-    if not "enc_data" and "powkey" in data: return jsonify({"status": "INVALID_INPUT"})
+    if not "enc_data" in data and not "powkey" in data: return jsonify({"status": "INVALID_INPUT"})
     
     dec_data = await fly.fly_crypto.decrypt(data['enc_data'], data['powkey'])
     powkey = data['powkey']
@@ -736,7 +736,7 @@ async def unlikeTwittReply():
 async def updateProfile():
     data = await request.get_json()
 
-    if not "enc_data" and "powkey" in data: return jsonify({"status": "INVALID_INPUT"})
+    if not "enc_data" in data and not "powkey" in data: return jsonify({"status": "INVALID_INPUT"})
     
     dec_data = await fly.fly_crypto.decrypt(data['enc_data'], data['powkey'])
     powkey = data['powkey']
@@ -793,12 +793,12 @@ async def updateProfile():
 
             return jsonify({"enc_data": enced['enc'], "powkey": powkey})
 
-@quart.route("/deleteAccount")
+@quart.route("/deleteAccount", methods=['POST'])
 async def deleteAccount():
     data = await request.get_json()
 
-    if not "enc_data" and "powkey" in data: return jsonify({"status": "INVALID_INPUT"})
-    
+    if not "enc_data" in data and not "powkey" in data: return jsonify({"status": "INVALID_INPUT"})
+
     dec_data = await fly.fly_crypto.decrypt(data['enc_data'], data['powkey'])
     powkey = data['powkey']
 
@@ -809,7 +809,6 @@ async def deleteAccount():
         data: dict = await isArray(dec_data['dec'])
         if not data == False:
             if 'auth_token' in data:
-                
                 user = await fly.delete(
                     data['auth_token']
                 )
@@ -850,7 +849,7 @@ async def deleteAccount():
 async def getMeHandshake():
     data = await websocket.receive_json()
 
-    if not "enc_data" and "powkey" in data: await websocket.send_json({"status": "INVALID_INPUT"})
+    if not "enc_data" in data and not "powkey" in data: await websocket.send_json({"status": "INVALID_INPUT"})
     
     dec_data = await fly.fly_crypto.decrypt(data['enc_data'], data['powkey'])
     powkey = data['powkey']
@@ -901,7 +900,7 @@ async def getMeHandshake():
 async def getUserTwitts():
     data = await websocket.receive_json()
 
-    if not "enc_data" and "powkey" in data: await websocket.send_json({"status": "INVALID_INPUT"})
+    if not "enc_data" in data and not "powkey" in data: await websocket.send_json({"status": "INVALID_INPUT"})
     
     dec_data = await fly.fly_crypto.decrypt(data['enc_data'], data['powkey'])
     powkey = data['powkey']
@@ -960,7 +959,7 @@ async def getUserTwitts():
 async def getUserByIdHandshake():
     data = await websocket.receive_json()
 
-    if not "enc_data" and "powkey" in data: await websocket.send_json({"status": "INVALID_INPUT"})
+    if not "enc_data" in data and not "powkey" in data: await websocket.send_json({"status": "INVALID_INPUT"})
     
     dec_data = await fly.fly_crypto.decrypt(data['enc_data'], data['powkey'])
     powkey = data['powkey']
@@ -1023,7 +1022,7 @@ async def getUserByIdHandshake():
 async def repostTwitt():
     data = await websocket.receive_json()
 
-    if not "enc_data" and "powkey" in data: await websocket.send_json({"status": "INVALID_INPUT"})
+    if not "enc_data" in data and not "powkey" in data: await websocket.send_json({"status": "INVALID_INPUT"})
     
     dec_data = await fly.fly_crypto.decrypt(data['enc_data'], data['powkey'])
     powkey = data['powkey']
@@ -1043,6 +1042,8 @@ async def repostTwitt():
                     ),
                     powkey
                 )
+
+                await websocket.send_json({"enc_data": enced['enc'], "powkey": powkey})
 
             else:
                 enced = await fly.fly_crypto.encrypt(

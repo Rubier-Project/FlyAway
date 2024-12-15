@@ -263,17 +263,19 @@ class Fly(object):
             bio = bio.strip()
             profile_photo = profile_photo.strip()
 
-            if username == "" or len(username) < 5:
+            if not username == "" and len(username) < 5:
                 return { "status": "INVALID_ID" }
             
             is_pro_string = self.isProStringSync(username)
-            can_decode = await self.canDecode(profile_photo)
+            
             
             if not is_pro_string:
                 return { "status": "INVALID_ID" }
             
-            if not can_decode:
-                return { "status": "INVALID_ENC" }
+            if not profile_photo == "":
+                can_decode = await self.canDecode(profile_photo)
+                if not can_decode:
+                    return { "status": "INVALID_ENC" }
 
             if username.isdigit():
                 return { "status": "INVALID_ID" }
@@ -297,8 +299,8 @@ class Fly(object):
                 "settings": {
                     "hide_phone_number": hide_phone_number if not hide_phone_number is None else user['user']['settings']['hide_phone_number'],
                     "others_can_repost_my_twitts": others_can_repost_my_twitts if not others_can_repost_my_twitts is None else user['user']['settings']['others_can_repost_my_twitts'],
-                    "show_my_followings": show_my_followings if not show_my_followings is None else user['user']['show_my_followings'],
-                    "show_my_followers": show_my_followers if not show_my_followers is None else user['user']['show_my_followers']
+                    "show_my_followings": show_my_followings if not show_my_followings is None else user['user']['settings']['show_my_followings'],
+                    "show_my_followers": show_my_followers if not show_my_followers is None else user['user']['settings']['show_my_followers']
                 },
                 "profile_photo": profile_photo if not profile_photo == "" else user['user']['profile_photo'],
                 "twts": user['user']['twts']
@@ -319,7 +321,7 @@ class Fly(object):
         user = await self.getUserByAuth(auth_token)
 
         if user['status'] == "OK":
-            self.users.execute("DELETE FROM users WHERE user_id = ?", (user['user']['user_id']))
+            self.users.execute("DELETE FROM users WHERE user_id = ?", (user['user']['user_id'],))
             self.users.commit()
             return { "status": "OK" }
         else: return user
@@ -387,12 +389,13 @@ class Fly(object):
 
         if user['status'] == "OK":
             if follow['status'] == "OK":
+                if not user['user']['user_id'] == follow['user']['user_id']:
                 
-                if not follow['user']['user_id'] in user['user']['user_id']:
-                    user['user']['followings'].append(follow['user']['user_id'])
-                
-                return { "status": "OK" }
-            
+                    if not follow['user']['user_id'] in user['user']['user_id']:
+                        user['user']['followings'].append(follow['user']['user_id'])
+                    
+                    return { "status": "OK" }
+                else: return { "status": "CANNOT_FOLLOW_YOUR_OWN" }
             else: return follow
         else: return user
 
