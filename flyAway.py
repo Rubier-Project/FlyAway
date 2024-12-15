@@ -12,7 +12,7 @@ async def isArray(data: str):
         return json.loads(data)
     except: return False
 
-@quart.route("/getHashtagsFromText")
+@quart.route("/getHashtagsFromText", methods=['POST'])
 async def getHashtagsFromText():
     data: dict = await request.get_json()
 

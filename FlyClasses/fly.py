@@ -44,14 +44,16 @@ async def addToHashtags(hash_tags: dict):
             if tag in tags:
                 content[tag] += hash_tags[tag]
             else: content[tag] = hash_tags[tag]
-        
-        await file.write( json.dumps(content, ensure_ascii=False ) )
+
+        async with aiofiles.open("hash_tags.json", "w") as file:
+            data = json.dumps(content, ensure_ascii=False)
+            await file.write( data )
 
 async def sortHashTags():
     async with aiofiles.open("hash_tags.json", "r") as file:
-        data = json.loads( await file.read() )
-        top_10_max = sorted([d['value'] for d in data], reverse=True)[:10]
-        return top_10_max
+        data: dict = json.loads( await file.read() )
+        top_10_max = sorted(data.items(), key=lambda item: item[1], reverse=True)[:10]
+        return dict(top_10_max)
 
 class Fly(object):
     def __init__(self):
