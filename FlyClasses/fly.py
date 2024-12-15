@@ -2,8 +2,8 @@
 # Add endpoint to return default_profile_encoded_bytes
 # Add Profile Refresher
 
-from flyZone import FlyZone
-from flyCrypto import ( FlyCrypto, base64 )
+from .flyZone import FlyZone
+from .flyCrypto import ( FlyCrypto, base64 )
 from collections import Counter
 from PIL import Image
 from pymediainfo import MediaInfo
@@ -13,10 +13,13 @@ import httpx
 import aiofiles
 import schedule
 import time
+import random
 import json
+import threading
 import re
 import io
 import os
+import asyncio
 import sqlite3
 
 message_types = Literal['text', 'photo', 'video', 'music', 'file']
@@ -120,6 +123,16 @@ class Fly(object):
             
         return { "status": "INVALID_AUTH_TOKEN" }
     
+    async def getUserByPhoneNumber(self, phone: str) -> dict:
+        phone = await self.trim(phone)
+
+        for user in await self.getUsers():
+            _user = json.loads(user[-1])
+            if _user['phone_number'] == phone:
+                return { "status": "OK", "user": _user }
+            
+        return { "status": "INVALID_AUTH_TOKEN" }
+    
     async def isExistsUsername(self, username: str) -> bool:
         for user in await self.getUsers():
             _user = json.loads(user[-1])
@@ -209,10 +222,14 @@ class Fly(object):
             "phone_number": phone_number,
             "auth_token": user_auth,
             "user_id": user_id,
+            "followers": [],
+            "followings": [],
             "has_tick": False,
             "settings": {
                 "hide_phone_number": True,
-                "others_can_repost_my_twitts": True
+                "others_can_repost_my_twitts": True,
+                "show_my_followings": True,
+                "show_my_followers": True
             },
             "profile_photo": self.default_profile_encoded_bytes,
             "twts": []
@@ -231,7 +248,9 @@ class Fly(object):
         bio: str = "",
         profile_photo: str = "",
         hide_phone_number: bool = None,
-        others_can_repost_my_twitts: bool = None
+        others_can_repost_my_twitts: bool = None,
+        show_my_followings: bool = None,
+        show_my_followers: bool = None
     ) -> dict:
         
         user = await self.getUserByAuth(auth_token)
@@ -270,10 +289,14 @@ class Fly(object):
                 "phone_number": user['user']['phone_number'],
                 "auth_token": user['user']['auth_token'],
                 "user_id": user['user']['user_id'],
+                "followers": user['user']['followers'],
+                "followings": user['user']['followings'],
                 "has_tick": user['user']['has_tick'],
                 "settings": {
                     "hide_phone_number": hide_phone_number if not hide_phone_number is None else user['user']['settings']['hide_phone_number'],
-                    "others_can_repost_my_twitts": others_can_repost_my_twitts if not others_can_repost_my_twitts is None else user['user']['settings']['others_can_repost_my_twitts']
+                    "others_can_repost_my_twitts": others_can_repost_my_twitts if not others_can_repost_my_twitts is None else user['user']['settings']['others_can_repost_my_twitts'],
+                    "show_my_followings": show_my_followings if not show_my_followings is None else user['user']['show_my_followings'],
+                    "show_my_followers": show_my_followers if not show_my_followers is None else user['user']['show_my_followers']
                 },
                 "profile_photo": profile_photo if not profile_photo == "" else user['user']['profile_photo'],
                 "twts": user['user']['twts']
@@ -350,6 +373,47 @@ class Fly(object):
             return { "status": "OK", "user": user['user'] }
 
         else: return user
+
+    async def follow(
+        self,
+        auth_token: str,
+        following_user_id: int
+    ) -> dict:
+        
+        user = await self.getUserByAuth(auth_token)
+        follow = await self.getUserByID(following_user_id)
+
+        if user['status'] == "OK":
+            if follow['status'] == "OK":
+                
+                if not follow['user']['user_id'] in user['user']['user_id']:
+                    user['user']['followings'].append(follow['user']['user_id'])
+                
+                return { "status": "OK" }
+            
+            else: return follow
+        else: return user
+
+    async def unfollow(
+        self,
+        auth_token: str,
+        following_user_id: int
+    ) -> dict:
+        
+        user = await self.getUserByAuth(auth_token)
+        follow = await self.getUserByID(following_user_id)
+
+        if user['status'] == "OK":
+            if follow['status'] == "OK":
+                
+                if follow['user']['user_id'] in user['user']['user_id']:
+                    user['user']['followings'].remove(follow['user']['user_id'])
+                
+                return { "status": "OK" }
+            
+            else: return follow
+        else: return user
+
 
 class FlyObject(object):
     def __init__(self):
@@ -1002,41 +1066,67 @@ class FlyObject(object):
         
         if user['status'] == "OK":
             if from_user['status'] == "OK":
+                if from_user['user']['settings']['others_can_repost_my_twitts']:
 
-                twitted = await self.findByID(from_user_id, twitted_id)
+                    twitted = await self.findByID(from_user_id, twitted_id)
 
-                if twitted['status'] == "OK":
+                    if twitted['status'] == "OK":
 
-                    twitted['twitted']['reposts'] += 1
-                    from_user['user']['twts'].pop(twitted['twitt_index'])
-                    from_user['user']['twts'].insert(twitted['twitt_index'], twitted['twitted'])
+                        twitted['twitted']['reposts'] += 1
+                        from_user['user']['twts'].pop(twitted['twitt_index'])
+                        from_user['user']['twts'].insert(twitted['twitt_index'], twitted['twitted'])
 
-                    self.fly.users.execute("UPDATE users SET user_data = ? WHERE user_id = ?", (json.dumps(from_user['user'], ensure_ascii=False), from_user_id))
-                    self.fly.users.commit()
+                        self.fly.users.execute("UPDATE users SET user_data = ? WHERE user_id = ?", (json.dumps(from_user['user'], ensure_ascii=False), from_user_id))
+                        self.fly.users.commit()
 
-                    return await self.addTwitt(
-                        auth_token,
-                        twitted['twitted']['text'],
-                        twitted['twitted']['message_type'],
-                        twitted['twitted']['media']
-                    )
+                        return await self.addTwitt(
+                            auth_token,
+                            twitted['twitted']['text'],
+                            twitted['twitted']['message_type'],
+                            twitted['twitted']['media']
+                        )
 
-                else: return twitted
+                    else: return twitted
+                else: return { "status": "UNABLE_REPOST" }
             else: return from_user
         else: return user
+
+    async def getRandomTwitts(self):
+        users = await self.fly.getUsers()
+        twitts = set()
+        selected_users = [u for u in users]
+
+        for _ in range(20):
+            if len(selected_users) > 0:
+                rnd_user = random.choice(selected_users)
+                _user = json.loads(rnd_user[-1])
+                if len(_user['twts']) > 0:
+                    twitts.add(
+                        random.choice(_user['twts'])
+                    )
+            else: pass
+        
+        return { "status": "OK", "twitts": list(twitts) }
 
     async def getTrendTags(self):
         return await sortHashTags()
 
-import asyncio
+# ----------------------
+
 from rich import print
 
 fly_object = FlyObject()
+
+def run_asyncio_loop():
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+    loop.run_forever()
 
 def twitts_schedule_task():
     schedule.every(10).seconds.do(lambda: asyncio.run(fly_object.refreshTwitts()))
 
 def run_pending():
+    threading.Thread(target=run_asyncio_loop, daemon=True).start()
     twitts_schedule_task()
     
     while True:

@@ -1,0 +1,32 @@
+{
+    "websocket_methods": {
+        "mthds": [
+            "getMeHandshake",
+            "getTrends",
+            "getExploreTwitts",
+            "getUserTwitts",
+            "getUserByIdHandshake",
+            "repostTwitt"
+        ]
+    },
+    "http_methods": {
+        "mthds": [
+            "follow",
+            "unfollow",
+            "getMe",
+            "getUserById",
+            "signin",
+            "signup",
+            "addTwitt",
+            "addTwittReply",
+            "removeTwitt",
+            "likeTwitt",
+            "likeTwittReply",
+            "unlikeTwitt",
+            "unlikeTwittReply",
+            "getHashtagsFromText",
+            "updateProfile",
+            "deleteAccount"
+        ]
+    }
+}
