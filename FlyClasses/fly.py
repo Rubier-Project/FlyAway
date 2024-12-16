@@ -524,10 +524,10 @@ class FlyObject(object):
             elif type == "photo":
                 photo = await self.photoAssert(media)
                 if photo['status'] == "OK":
-                    can_decode = await self.fly.canDecode(media['enc_data'])
+                    can_decode = await self.fly.canDecode(media['enc_bytes'])
                     if can_decode:
                         try:
-                            decrypted = base64.b64decode(media['enc_data'].encode())
+                            decrypted = base64.b64decode(media['enc_bytes'].encode())
                             image_stream = io.BytesIO(decrypted)
                             with Image.open(image_stream) as img:
                                 width, height = img.size
@@ -549,7 +549,7 @@ class FlyObject(object):
                                     "width": width,
                                     "height": height,
                                     "size": len(decrypted),
-                                    "enc_data": media['enc_data']
+                                    "enc_bytes": media['enc_bytes']
                                 },
                                 "replies": []
                             }
@@ -561,10 +561,10 @@ class FlyObject(object):
             elif type == "file":
                 file = await self.fileAssert(media)
                 if file['status'] == "OK":
-                    can_decode = await self.fly.canDecode(media['enc_data'])
+                    can_decode = await self.fly.canDecode(media['enc_bytes'])
                     if can_decode:
                         try:
-                            decrypted = base64.b64decode(media['enc_data'].encode())
+                            decrypted = base64.b64decode(media['enc_bytes'].encode())
                             dec = len(decrypted)
                             
                             message = {
@@ -582,7 +582,7 @@ class FlyObject(object):
                                 "profile_photo": user['user']['profile_photo'],
                                 "media": {
                                     "size": dec,
-                                    "enc_data": media['enc_data']
+                                    "enc_bytes": media['enc_bytes']
                                 },
                                 "replies": []
                             }
@@ -594,10 +594,10 @@ class FlyObject(object):
             elif type == "music":
                 music = await self.musicAssert(media)
                 if music['status'] == "OK":
-                    can_decode = await self.fly.canDecode(media['enc_data'])
+                    can_decode = await self.fly.canDecode(media['enc_bytes'])
                     if can_decode:
                         try:
-                            decrypted = base64.b64decode(media['enc_data'].encode())
+                            decrypted = base64.b64decode(media['enc_bytes'].encode())
                             music_stream = io.BytesIO(decrypted)
                             music = File(music_stream)
                             duration = music.info.length
@@ -618,7 +618,7 @@ class FlyObject(object):
                                 "media": {
                                     "size": len(decrypted),
                                     "duration": duration,
-                                    "enc_data": media['enc_data']
+                                    "enc_bytes": media['enc_bytes']
                                 },
                                 "replies": []
                             }
@@ -630,10 +630,10 @@ class FlyObject(object):
             elif type == "video":
                 video = await self.videoAssert(media)
                 if video['status'] == "OK":
-                    can_decode = await self.fly.canDecode(media['enc_data'])
+                    can_decode = await self.fly.canDecode(media['enc_bytes'])
                     if can_decode:
                         try:
-                            decrypted = base64.b64decode(media['enc_data'].encode())
+                            decrypted = base64.b64decode(media['enc_bytes'].encode())
                             video_stream = io.BytesIO(decrypted)
                             clip = MediaInfo.parse(video_stream)
                             video_track = next((track for track in clip.tracks if track.track_type == "Video"), None)
@@ -658,7 +658,7 @@ class FlyObject(object):
                                     "duration": duration,
                                     "height": height,
                                     "width": width,
-                                    "enc_data": media['enc_data']
+                                    "enc_bytes": media['enc_bytes']
                                 },
                                 "replies": []
                             }
@@ -747,10 +747,10 @@ class FlyObject(object):
                     elif type == "photo":
                         photo = await self.photoAssert(media)
                         if photo['status'] == "OK":
-                            can_decode = await self.fly.canDecode(media['enc_data'])
+                            can_decode = await self.fly.canDecode(media['enc_bytes'])
                             if can_decode:
                                 try:
-                                    decrypted = base64.b64decode(media['enc_data'].encode())
+                                    decrypted = base64.b64decode(media['enc_bytes'].encode())
                                     image_stream = io.BytesIO(decrypted)
                                     with Image.open(image_stream) as img:
                                         width, height = img.size
@@ -771,7 +771,7 @@ class FlyObject(object):
                                             "width": width,
                                             "height": height,
                                             "size": len(decrypted),
-                                            "enc_data": media['enc_data']
+                                            "enc_bytes": media['enc_bytes']
                                         }
                                     }
 
@@ -782,10 +782,10 @@ class FlyObject(object):
                     elif type == "file":
                         file = await self.fileAssert(media)
                         if file['status'] == "OK":
-                            can_decode = await self.fly.canDecode(media['enc_data'])
+                            can_decode = await self.fly.canDecode(media['enc_bytes'])
                             if can_decode:
                                 try:
-                                    decrypted = base64.b64decode(media['enc_data'].encode())
+                                    decrypted = base64.b64decode(media['enc_bytes'].encode())
                                     dec = len(decrypted)
                                     
                                     message = {
@@ -802,7 +802,7 @@ class FlyObject(object):
                                         "profile_photo": user['user']['profile_photo'],
                                         "media": {
                                             "size": dec,
-                                            "enc_data": media['enc_data']
+                                            "enc_bytes": media['enc_bytes']
                                         }
                                     }
 
@@ -813,10 +813,10 @@ class FlyObject(object):
                     elif type == "music":
                         music = await self.musicAssert(media)
                         if music['status'] == "OK":
-                            can_decode = await self.fly.canDecode(media['enc_data'])
+                            can_decode = await self.fly.canDecode(media['enc_bytes'])
                             if can_decode:
                                 try:
-                                    decrypted = base64.b64decode(media['enc_data'].encode())
+                                    decrypted = base64.b64decode(media['enc_bytes'].encode())
                                     music_stream = io.BytesIO(decrypted)
                                     music = File(music_stream)
                                     duration = music.info.length
@@ -836,7 +836,7 @@ class FlyObject(object):
                                         "media": {
                                             "size": len(decrypted),
                                             "duration": duration,
-                                            "enc_data": media['enc_data']
+                                            "enc_bytes": media['enc_bytes']
                                         }
                                     }
 
@@ -847,10 +847,10 @@ class FlyObject(object):
                     elif type == "video":
                         video = await self.videoAssert(media)
                         if video['status'] == "OK":
-                            can_decode = await self.fly.canDecode(media['enc_data'])
+                            can_decode = await self.fly.canDecode(media['enc_bytes'])
                             if can_decode:
                                 try:
-                                    decrypted = base64.b64decode(media['enc_data'].encode())
+                                    decrypted = base64.b64decode(media['enc_bytes'].encode())
                                     video_stream = io.BytesIO(decrypted)
                                     clip = MediaInfo.parse(video_stream)
                                     video_track = next((track for track in clip.tracks if track.track_type == "Video"), None)
@@ -874,7 +874,7 @@ class FlyObject(object):
                                             "duration": duration,
                                             "height": height,
                                             "width": width,
-                                            "enc_data": media['enc_data']
+                                            "enc_bytes": media['enc_bytes']
                                         }
                                     }
 
