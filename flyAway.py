@@ -297,6 +297,7 @@ async def getUserById():
                         data['user_id']
                     )
 
+                    if "auth_token" in user['user']:del user['user']['auth_token']
                     if user['user']['settings']['hide_phone_number']:del user['user']['phone_number']
                     if not user['user']['settings']['show_my_followings']: del user['user']['followings']
                     if not user['user']['settings']['show_my_followers']: del user['user']['followers']
@@ -980,7 +981,8 @@ async def getUserByIdHandshake():
                     from_user = await fly.getUserByID(data['user_id'])
 
                     if from_user['status'] == "OK":
-
+                        
+                        if "auth_token" in user['user']:del user['user']['auth_token']
                         if from_user['user']['settings']['hide_phone_number']:del from_user['user']['phone_number']
                         if not from_user['user']['settings']['show_my_followings']: del from_user['user']['followings']
                         if not from_user['user']['settings']['show_my_followers']: del from_user['user']['followers']

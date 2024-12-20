@@ -393,6 +393,9 @@ class Fly(object):
                 
                     if not follow['user']['user_id'] in user['user']['user_id']:
                         user['user']['followings'].append(follow['user']['user_id'])
+
+                    self.users.execute("UPDATE users SET user_data = ? WHERE user_id = ?", (json.dumps(user['user'], ensure_ascii=False), user['user']['user_id']))
+                    self.users.commit()
                     
                     return { "status": "OK" }
                 else: return { "status": "CANNOT_FOLLOW_YOUR_OWN" }
@@ -413,9 +416,11 @@ class Fly(object):
                 
                 if follow['user']['user_id'] in user['user']['user_id']:
                     user['user']['followings'].remove(follow['user']['user_id'])
+
+                self.users.execute("UPDATE users SET user_data = ? WHERE user_id = ?", (json.dumps(user['user'], ensure_ascii=False), user['user']['user_id']))
+                self.users.commit()
                 
                 return { "status": "OK" }
-            
             else: return follow
         else: return user
 
