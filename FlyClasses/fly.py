@@ -191,6 +191,9 @@ class Fly(object):
         if username == "" or len(username) < 5:
             return { "status": "INVALID_ID" }
         
+        if username == "":
+            return { "status": "INVALID_ID" }
+        
         is_pro_string = self.isProStringSync(username)
         
         if not is_pro_string:
@@ -266,8 +269,10 @@ class Fly(object):
             if not username == "" and len(username) < 5:
                 return { "status": "INVALID_ID" }
             
-            is_pro_string = self.isProStringSync(username)
+            if username == "":
+                return { "status": "INVALID_ID" }
             
+            is_pro_string = self.isProStringSync(username)
             
             if not is_pro_string:
                 return { "status": "INVALID_ID" }
